@@ -5,6 +5,9 @@ on:
     branches:
       - "main"
 
+env:
+  TEST_TAG: jamjaws/alpine-curl-jq:test
+
 jobs:
   docker:
     runs-on: ubuntu-latest
@@ -20,6 +23,15 @@ jobs:
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and export to Docker
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          load: true
+          tags: ${{ env.TEST_TAG }}
+      - name: Test
+        run: |
+          docker run --rm -v ./test.sh:/opt/test.sh ${{ env.TEST_TAG }} "sh" "-c" "/opt/test.sh"
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
