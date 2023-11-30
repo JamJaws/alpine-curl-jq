@@ -44,6 +44,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          build-args: ALPINE_TAG=${{ inputs.alpine-tag }}
           load: true
           tags: ${{ env.TEST_TAG }}
       - name: Test
