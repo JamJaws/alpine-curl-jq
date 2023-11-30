@@ -1,0 +1,15 @@
+name: Build, test and push
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  docker:
+    uses: ./.github/workflows/build-test-push.yaml
+    with:
+      alpine-tag: 3.18.4
+      dockerhub-username: ${{ vars.DOCKERHUB_USERNAME }}
+    secrets:
+      dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}

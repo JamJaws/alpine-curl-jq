@@ -1,4 +1,6 @@
-FROM alpine:3.18.4
+ARG ALPINE_TAG
+
+FROM alpine:$ALPINE_TAG
 
 RUN apk update
 RUN apk upgrade --no-cache
