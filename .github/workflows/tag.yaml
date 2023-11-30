@@ -1,0 +1,17 @@
+name: Build, test and push
+
+on:
+  pull_request:
+  push:
+    branches:
+      - '**'
+    tags:
+      - "v*"
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/workflows/build-test-push.yaml
+        with:
+          alpine-tag: latest
