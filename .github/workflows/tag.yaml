@@ -14,3 +14,6 @@ jobs:
     uses: ./.github/workflows/build-test-push.yaml
     with:
       alpine-tag: latest
+      dockerhub-username: ${{ vars.DOCKERHUB_USERNAME }}
+    secrets:
+      dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
