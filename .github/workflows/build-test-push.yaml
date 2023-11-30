@@ -17,7 +17,7 @@ env:
   TEST_TAG: jamjaws/alpine-curl-jq:test
 
 jobs:
-  docker:
+  build-test-push:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

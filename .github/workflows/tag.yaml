@@ -1,4 +1,4 @@
-name: Build, test and push
+name: tag
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - v*
 
 jobs:
-  docker:
+  build-test-push:
     uses: ./.github/workflows/build-test-push.yaml
     with:
       alpine-tag: 3.18.4
