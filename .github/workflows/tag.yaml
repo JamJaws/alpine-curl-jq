@@ -10,8 +10,7 @@ on:
 
 jobs:
   docker:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: ./.github/workflows/build-test-push.yaml
-        with:
-          alpine-tag: latest
+    #    runs-on: ubuntu-latest
+    uses: ./.github/workflows/build-test-push.yaml
+    with:
+      alpine-tag: latest
