@@ -9,6 +9,10 @@ on:
       dockerhub-username:
         required: true
         type: string
+      push:
+        required: false
+        type: boolean
+        default: true
     secrets:
       dockerhub-token:
         required: true
@@ -54,6 +58,7 @@ jobs:
           docker run --rm -v ./test.sh:/opt/test.sh ${{ env.TEST_TAG }} "sh" "-c" "/opt/test.sh"
       - name: Build and push
         uses: docker/build-push-action@v5
+        if: ${{ inputs.push }}
         with:
           context: .
           build-args: ALPINE_TAG=${{ inputs.alpine-tag }}

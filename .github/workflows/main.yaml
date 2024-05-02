@@ -1,8 +1,10 @@
 name: main
 
 on:
-  schedule:
-    - cron: '0 12 1 * *'
+  pull_request:
+  push:
+    branches:
+      - main
 
 jobs:
   build-test-push:
@@ -10,13 +12,6 @@ jobs:
     with:
       alpine-tag: latest
       dockerhub-username: ${{ vars.DOCKERHUB_USERNAME }}
+      push: false
     secrets:
       dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
-  keepalive-job:
-    name: Keepalive Workflow
-    runs-on: ubuntu-latest
-    permissions:
-      actions: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: gautamkrishnar/keepalive-workflow@v2
