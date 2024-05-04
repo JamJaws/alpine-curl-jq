@@ -12,6 +12,25 @@ jobs:
       dockerhub-username: ${{ vars.DOCKERHUB_USERNAME }}
     secrets:
       dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+  update-alpine-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # https://github.com/stefanzweifel/git-auto-commit-action?tab=readme-ov-file#commits-made-by-this-action-do-not-trigger-new-workflow-runs
+          token: ${{ secrets.PAT }}
+          ref: ${{ github.head_ref }}
+      - name: Run Alpine version update script
+        run: ./update-alpine.sh
+      - name: Set commit variables
+        id: commit_data
+        run: |
+          echo "commit_message=build(deps): bump alpine base version to $(cat alpine-version)" >> "$GITHUB_OUTPUT"
+          echo "tag=v$(cat alpine-version)" >> "$GITHUB_OUTPUT"
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: ${{ steps.commit_data.outputs.commit_message }}
+          tagging_message: ${{ steps.commit_data.outputs.tag }}
   keepalive-job:
     name: Keepalive Workflow
     runs-on: ubuntu-latest
