@@ -47,7 +47,7 @@ jobs:
           username: ${{ inputs.dockerhub-username }}
           password: ${{ secrets.dockerhub-token }}
       - name: Build and export to Docker
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           build-args: ALPINE_TAG=${{ inputs.alpine-tag }}
@@ -57,7 +57,7 @@ jobs:
         run: |
           docker run --rm -v ./test.sh:/opt/test.sh ${{ env.TEST_TAG }} "sh" "-c" "/opt/test.sh"
       - name: Build and push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         if: ${{ inputs.push }}
         with:
           context: .
