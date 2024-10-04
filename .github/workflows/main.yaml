@@ -7,6 +7,11 @@ on:
       - main
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hadolint/hadolint-action@v3.1.0
   build-test-push:
     uses: ./.github/workflows/build-test-push.yaml
     with:
