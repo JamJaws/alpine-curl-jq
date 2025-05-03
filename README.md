@@ -11,5 +11,11 @@ docker pull jamjaws/alpine-curl-jq
 ## Example usage
 
 ```shell
-docker run -it --rm jamjaws/alpine-curl-jq "sh" "-c" "curl http://artscene.textfiles.com/asciiart/unicorn"
+docker run -it --rm jamjaws/alpine-curl-jq "curl http://artscene.textfiles.com/asciiart/unicorn"
+```
+
+Get ip:
+
+```shell
+docker run -it --rm jamjaws/alpine-curl-jq "curl -s https://api.ipify.org?format=json | jq -r '.ip'"
 ```
