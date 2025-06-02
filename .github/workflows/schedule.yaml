@@ -43,3 +43,5 @@ jobs:
         with:
           branch: 'schedule'
           commit_message: 'chore: set last run date'
+          create_branch: true
+          push_options: '--force'
