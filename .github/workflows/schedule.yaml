@@ -27,7 +27,7 @@ jobs:
         run: |
           echo "commit_message=build(deps): bump alpine base version to $(cat alpine-version)" >> "$GITHUB_OUTPUT"
           echo "tag=v$(cat alpine-version)" >> "$GITHUB_OUTPUT"
-      - uses: stefanzweifel/git-auto-commit-action@v6
+      - uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: ${{ steps.commit_data.outputs.commit_message }}
           tagging_message: ${{ steps.commit_data.outputs.tag }}
@@ -39,7 +39,7 @@ jobs:
           token: ${{ secrets.PAT }}
       - name: Set last run date
         run: date > last_run.txt
-      - uses: stefanzweifel/git-auto-commit-action@v6
+      - uses: stefanzweifel/git-auto-commit-action@v7
         with:
           branch: 'schedule'
           commit_message: 'chore: set last run date'
