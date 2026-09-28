@@ -97,6 +97,7 @@ jobs:
         with:
           context: .
           platforms: ${{ matrix.platform }}
+          labels: ${{ needs.metadata.outputs.labels }}
           load: ${{ !inputs.push }}
           tags: ${{ !inputs.push && env.TEST_TAG || '' }}
           # Publishing builds stage an untagged digest; public tags move only after all tests pass.
