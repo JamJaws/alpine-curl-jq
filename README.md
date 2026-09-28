@@ -60,13 +60,20 @@ Use the reported digest with the `jamjaws/alpine-curl-jq@sha256:...` reference s
 ## Build and test locally
 
 ```sh
-docker build --pull --platform linux/amd64 -t alpine-curl-jq:local .
-./tests/run-container.sh alpine-curl-jq:local linux/amd64
+./test.sh
 ```
 
-The test runner requires a Linux Docker host, Bash, Python 3, and curl. Choose another supported platform when needed; foreign architectures require emulation. Set `TEST_PORT` if the default local fixture port, 8765, is occupied.
+Requires Docker with Compose v2.20 or newer and a POSIX shell. The command builds the image for your native platform, starts the fixture server from [compose.test.yaml](compose.test.yaml), runs the checks, and removes the test containers and network on exit.
 
-Tests serve a local JSON fixture, exercise curl and jq in a non-root container with a read-only filesystem, and verify that an HTTP 404 fails. They do not depend on a public API. The negative test also detects an entrypoint that accidentally skips the test script.
+To test an existing image without rebuilding it, including a different architecture:
+
+```sh
+./test.sh jamjaws/alpine-curl-jq:latest linux/arm64
+```
+
+Foreign architectures require emulation. CI uses this same command for each platform and tests the exact image it built.
+
+A BusyBox HTTP server serves the JSON fixture on the Compose network without publishing a host port. Tests exercise curl and jq through the image's actual entrypoint as a non-root user with a read-only filesystem. They require exit code 22 for HTTP 404 and verify the default curl-help command. The tests need no host Python or curl installation and make no requests to public APIs.
 
 To lint locally, install the corresponding tools and run:
 
