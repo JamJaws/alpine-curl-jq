@@ -56,7 +56,9 @@ jobs:
           tags: ${{ env.TEST_TAG }}
       - name: Test
         run: |
-          docker run --rm -v ./test.sh:/opt/test.sh ${{ env.TEST_TAG }} "sh" "-c" "/opt/test.sh"
+          docker run --rm --entrypoint sh \
+            -v "$PWD/test.sh:/opt/test.sh:ro" \
+            "$TEST_TAG" /opt/test.sh
       - name: Build and push
         uses: docker/build-push-action@v7
         if: ${{ inputs.push }}
