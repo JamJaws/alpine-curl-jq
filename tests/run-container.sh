@@ -24,15 +24,24 @@ fi
 run_args=(
   --rm --platform "$platform" --network host
   --user 65532:65532 --read-only --cap-drop ALL
-  --security-opt no-new-privileges=true --entrypoint sh
+  --security-opt no-new-privileges=true
   --volume "$repository_root/test.sh:/opt/test.sh:ro"
 )
 
-docker run "${run_args[@]}" "$image" /opt/test.sh "$base_url/fixture.json"
+docker run "${run_args[@]}" --env TEST_URL="$base_url/fixture.json" \
+  "$image" 'exec /opt/test.sh "$TEST_URL"'
 
 # This also catches regressions where the entrypoint silently skips the test script.
-if docker run "${run_args[@]}" "$image" /opt/test.sh "$base_url/missing.json"; then
+if docker run "${run_args[@]}" --env TEST_URL="$base_url/missing.json" \
+  "$image" 'exec /opt/test.sh "$TEST_URL"'; then
   echo 'The smoke test incorrectly succeeded for an HTTP 404.' >&2
+  exit 1
+fi
+
+# Keep the documented no-argument behavior covered as well as shell commands.
+help_output=$(docker run "${run_args[@]}" "$image")
+if [[ "$help_output" != "Usage: curl "* ]]; then
+  echo 'Running the image without arguments did not print curl help.' >&2
   exit 1
 fi
 
