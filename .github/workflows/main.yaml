@@ -21,6 +21,7 @@ concurrency:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
@@ -28,6 +29,13 @@ jobs:
       - uses: hadolint/hadolint-action@2332a7b74a6de0dda2e2221d575162eba76ba5e5 # v3.3.0
         with:
           ignore: DL3018
+      - name: Lint workflows
+        uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7 # v2
+        with:
+          version: '1.7.12'
+          pyflakes: false
+      - name: Lint shell scripts
+        run: shellcheck test.sh tests/*.sh
   build-test-push:
     needs: lint
     uses: ./.github/workflows/build-test-push.yaml
@@ -40,6 +48,7 @@ jobs:
   last-run:
     if: github.event_name == 'schedule'
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: write
     steps:
