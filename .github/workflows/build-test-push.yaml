@@ -98,6 +98,7 @@ jobs:
           context: .
           platforms: ${{ matrix.platform }}
           labels: ${{ needs.metadata.outputs.labels }}
+          sbom: ${{ inputs.push }}
           load: ${{ !inputs.push }}
           tags: ${{ !inputs.push && env.TEST_TAG || '' }}
           # Publishing builds stage an untagged digest; public tags move only after all tests pass.
@@ -110,6 +111,17 @@ jobs:
           docker run --rm --platform "$PLATFORM" --entrypoint sh \
             -v "$PWD/test.sh:/opt/test.sh:ro" \
             "$TEST_IMAGE" /opt/test.sh
+      - name: Scan image for fixable vulnerabilities
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        env:
+          TRIVY_PLATFORM: ${{ matrix.platform }}
+        with:
+          image-ref: ${{ inputs.push && format('{0}@{1}', env.IMAGE_NAME, steps.build.outputs.digest) || env.TEST_TAG }}
+          scanners: vuln
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+          timeout: 5m
       - name: Export tested digest
         if: ${{ inputs.push }}
         env:
