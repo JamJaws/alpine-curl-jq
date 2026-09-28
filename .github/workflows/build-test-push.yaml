@@ -15,11 +15,15 @@ on:
         required: true
 
 env:
+  IMAGE_NAME: jamjaws/alpine-curl-jq
   TEST_TAG: jamjaws/alpine-curl-jq:test
 
 jobs:
-  build-test-push:
+  metadata:
     runs-on: ubuntu-latest
+    outputs:
+      tags: ${{ steps.meta.outputs.tags }}
+      labels: ${{ steps.meta.outputs.labels }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -52,6 +56,24 @@ jobs:
             type=semver,pattern={{major}}.{{minor}},value=${{ steps.alpine.outputs.version }},enable={{is_default_branch}}
             type=semver,pattern={{version}},value=${{ steps.alpine.outputs.version }}
             type=raw,value=build-${{ github.run_id }}-${{ github.run_attempt }}
+  build-test:
+    needs: metadata
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            arch: amd64
+          - platform: linux/arm64
+            arch: arm64
+          - platform: linux/arm/v7
+            arch: armv7
+          - platform: linux/arm/v6
+            arch: armv6
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
       - name: Set up Docker Buildx
@@ -62,22 +84,68 @@ jobs:
         with:
           username: ${{ inputs.dockerhub-username }}
           password: ${{ secrets.dockerhub-token }}
-      - name: Build and export to Docker
+      - name: Build image
+        id: build
         uses: docker/build-push-action@v7
         with:
           context: .
-          load: true
-          tags: ${{ env.TEST_TAG }}
+          platforms: ${{ matrix.platform }}
+          load: ${{ !inputs.push }}
+          tags: ${{ !inputs.push && env.TEST_TAG || '' }}
+          # Publishing builds stage an untagged digest; public tags move only after all tests pass.
+          outputs: ${{ inputs.push && format('type=image,name={0},push-by-digest=true,name-canonical=true,push=true', env.IMAGE_NAME) || '' }}
       - name: Test
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          TEST_IMAGE: ${{ inputs.push && format('{0}@{1}', env.IMAGE_NAME, steps.build.outputs.digest) || env.TEST_TAG }}
         run: |
-          docker run --rm --entrypoint sh \
+          docker run --rm --platform "$PLATFORM" --entrypoint sh \
             -v "$PWD/test.sh:/opt/test.sh:ro" \
-            "$TEST_TAG" /opt/test.sh
-      - name: Build and push
-        uses: docker/build-push-action@v7
+            "$TEST_IMAGE" /opt/test.sh
+      - name: Export tested digest
         if: ${{ inputs.push }}
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/digests"
+          touch "$RUNNER_TEMP/digests/${DIGEST#sha256:}"
+      - name: Upload tested digest
+        if: ${{ inputs.push }}
+        uses: actions/upload-artifact@v4
         with:
-          context: .
-          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          name: digest-${{ matrix.arch }}
+          path: ${{ runner.temp }}/digests/*
+          if-no-files-found: error
+          retention-days: 7
+          overwrite: true
+  publish:
+    needs: [metadata, build-test]
+    if: ${{ inputs.push }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download tested digests
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ runner.temp }}/digests
+          pattern: digest-*
+          merge-multiple: true
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ inputs.dockerhub-username }}
+          password: ${{ secrets.dockerhub-token }}
+      - name: Publish multi-platform image
+        env:
+          IMAGE_TAGS: ${{ needs.metadata.outputs.tags }}
+        run: |
+          tags=()
+          while IFS= read -r tag; do
+            tags+=(--tag "$tag")
+          done <<< "$IMAGE_TAGS"
+          images=()
+          for digest in "$RUNNER_TEMP"/digests/*; do
+            images+=("$IMAGE_NAME@sha256:$(basename "$digest")")
+          done
+          docker buildx imagetools create "${tags[@]}" "${images[@]}"
