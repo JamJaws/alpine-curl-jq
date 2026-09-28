@@ -3,9 +3,6 @@ name: Build, test and push
 on:
   workflow_call:
     inputs:
-      alpine-tag:
-        required: true
-        type: string
       dockerhub-username:
         required: true
         type: string
@@ -51,7 +48,6 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          build-args: ALPINE_TAG=${{ inputs.alpine-tag }}
           load: true
           tags: ${{ env.TEST_TAG }}
       - name: Test
@@ -64,7 +60,6 @@ jobs:
         if: ${{ inputs.push }}
         with:
           context: .
-          build-args: ALPINE_TAG=${{ inputs.alpine-tag }}
           platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
           push: ${{ github.ref == 'refs/heads/main' || github.ref_type == 'tag' }}
           tags: ${{ steps.meta.outputs.tags }}
