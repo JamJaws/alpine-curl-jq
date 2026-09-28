@@ -66,7 +66,7 @@ docker build --pull --platform linux/amd64 -t alpine-curl-jq:local .
 
 The test runner requires a Linux Docker host, Bash, Python 3, and curl. Choose another supported platform when needed; foreign architectures require emulation. Set `TEST_PORT` if the default local fixture port, 8765, is occupied.
 
-Tests serve a local JSON fixture, exercise curl and jq in a non-root container with a read-only filesystem, check the CA bundle, and verify that an HTTP 404 fails. They do not depend on a public API. The negative test also detects an entrypoint that accidentally skips the test script.
+Tests serve a local JSON fixture, exercise curl and jq in a non-root container with a read-only filesystem, and verify that an HTTP 404 fails. They do not depend on a public API. The negative test also detects an entrypoint that accidentally skips the test script.
 
 To lint locally, install the corresponding tools and run:
 
