@@ -45,10 +45,11 @@ jobs:
         with:
           images: |
             jamjaws/alpine-curl-jq
+          flavor: latest=false
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
-            type=semver,pattern={{major}},value=${{ steps.alpine.outputs.version }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ steps.alpine.outputs.version }}
+            type=semver,pattern={{major}},value=${{ steps.alpine.outputs.version }},enable={{is_default_branch}}
+            type=semver,pattern={{major}}.{{minor}},value=${{ steps.alpine.outputs.version }},enable={{is_default_branch}}
             type=semver,pattern={{version}},value=${{ steps.alpine.outputs.version }}
             type=raw,value=build-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Set up QEMU
