@@ -1,0 +1,24 @@
+services:
+  busybox:
+    image: busybox:1.37.0
+    command: [httpd, -f, -p, '8080', -h, /www]
+    user: '65532:65532'
+    read_only: true
+    volumes:
+      - ./tests/fixture.json:/www/fixture.json:ro
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, 'http://127.0.0.1:8080/fixture.json']
+      interval: 1s
+      timeout: 2s
+      retries: 10
+
+  test:
+    image: ${TEST_IMAGE:-alpine-curl-jq:test}
+    platform: ${TEST_PLATFORM:-}
+    pull_policy: missing
+    user: '65532:65532'
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    volumes:
+      - ./tests/http.sh:/opt/http.sh:ro
