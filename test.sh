@@ -21,12 +21,12 @@ if [ "$#" -eq 0 ]; then
   docker build --pull -t "$TEST_IMAGE" .
 fi
 
-compose up -d --wait --wait-timeout 30 mockserver
-run 'exec /opt/http.sh http://mockserver:8080/fixture.json'
+compose up -d --wait --wait-timeout 30 busybox
+run 'exec /opt/http.sh http://busybox:8080/fixture.json'
 
 # Require curl's HTTP-error status; a skipped script or network failure must fail.
 status=0
-run 'exec /opt/http.sh http://mockserver:8080/missing.json' || status=$?
+run 'exec /opt/http.sh http://busybox:8080/missing.json' || status=$?
 if [ "$status" -ne 22 ]; then
   echo "Expected curl exit 22 for HTTP 404, got $status." >&2
   exit 1
