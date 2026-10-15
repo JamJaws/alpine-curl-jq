@@ -1,8 +1,6 @@
-ARG ALPINE_TAG
+FROM alpine:3.24.2
 
-FROM alpine:$ALPINE_TAG
-
-RUN apk update && apk upgrade --no-cache && \
+RUN apk upgrade --no-cache && \
     apk add --no-cache curl jq
 
 LABEL org.opencontainers.image.authors="John Mogensen <jamjaws@gmail.com>"
