@@ -1,21 +1,28 @@
 # Alpine Docker Image with curl and jq
 
-Simple Alpine image with curl and jq, nothing more, nothing less. It is only a few MB in size.
+Simple Alpine image with curl and jq.
 
-## Pull image
+## Usage
 
-```shell
-docker pull jamjaws/alpine-curl-jq
+```sh
+docker run --rm jamjaws/alpine-curl-jq 'curl --version && jq --version'
 ```
 
-## Example usage
+Get your public IP:
 
-```shell
-docker run -it --rm jamjaws/alpine-curl-jq "curl http://artscene.textfiles.com/asciiart/unicorn"
+```sh
+docker run --rm jamjaws/alpine-curl-jq 'curl -fsS "https://api.ipify.org?format=json" | jq -er .ip'
 ```
 
-Get ip:
+The entrypoint is `sh -c`; pass the whole command as one quoted argument.
 
-```shell
-docker run -it --rm jamjaws/alpine-curl-jq "curl -s https://api.ipify.org?format=json | jq -r '.ip'"
+Supports `linux/amd64`, `linux/arm64`, `linux/arm/v7`, and `linux/arm/v6`.
+Tags follow the Alpine version (major, minor, and patch). `latest` and the current version tags are rebuilt weekly.
+
+## Build and test
+
+Requires Docker with Compose:
+
+```sh
+./test.sh
 ```
